@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Menü Listesi</title>
+</head>
+<body>
+    <h1>Menü Listesi</h1>
+    <ul>
+        {% for yemek in menuler %}
+            <li>{{ yemek.yemek_adi }} - {{ yemek.fiyat }} TL</li>
+        {% empty %}
+            <li>Henüz menüde yemek yok.</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="{% url 'index' %}">Ana sayfaya dön</a></p>
+</body>
+</html>

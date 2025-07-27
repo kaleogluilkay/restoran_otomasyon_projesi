@@ -1,0 +1,108 @@
+{% extends "restaurant/base.html" %}
+{% load static %}
+
+{% block content %}
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light px-3 mb-4">
+  <div class="container-fluid">
+    <span class="navbar-text">
+      Garson paneline hoş geldiniz, <strong>{{ request.user.username }}</strong>
+    </span>
+
+    <div class="ms-auto">
+      <form method="POST" action="{% url 'logout' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm">Çıkış Yap</button>
+      </form>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+<div class="container my-4">
+ 
+
+  <div class="row">
+    <!-- Masa Listesi -->
+    <div class="col-md-4">
+      <h4>Masalar</h4>
+      <div class="list-group">
+        {% for masa in masalar %}
+          <a href="?masa_id={{ masa.id }}" 
+             class="list-group-item list-group-item-action {% if secilen_masa and masa.id == secilen_masa.id %}active{% endif %}"
+             aria-current="{% if secilen_masa and masa.id == secilen_masa.id %}true{% else %}false{% endif %}">
+            Masa {{ masa.numara }}
+            <span class="badge {% if masa.durum == 'dolu' %}bg-danger{% else %}bg-success{% endif %} float-end">
+              {{ masa.get_durum_display }}
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sipariş Ekleme ve Siparişler -->
+    <div class="col-md-8">
+      {% if secilen_masa %}
+        <h4>Masa {{ secilen_masa.numara }} için Sipariş Ekle</h4>
+
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="masa_id" value="{{ secilen_masa.id }}">
+
+          <div class="mb-3">
+            <label for="menu_id" class="form-label">Ürün Seç</label>
+            <select class="form-select" name="menu_id" id="menu_id" required>
+              {% for item in menuler %}
+                <option value="{{ item.id }}">{{ item.yemek_adi }} - {{ item.fiyat }}₺ ({{ item.get_kategori_display }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="adet" class="form-label">Adet</label>
+            <input type="number" class="form-control" name="adet" id="adet" value="1" min="1" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Sipariş Ekle</button>
+        </form>
+
+        <hr>
+
+        <h4>Masa {{ secilen_masa.numara }} - Aktif Siparişler</h4>
+        {% if siparisler %}
+          <div class="list-group">
+            {% for siparis in siparisler %}
+              <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                  <h5 class="mb-1">Sipariş ID: {{ siparis.id }}</h5>
+                  <small>{{ siparis.tarih_saat|date:"d.m.Y H:i" }}</small>
+                </div>
+                <p class="mb-1">Durum: <strong>{{ siparis.get_durum_display }}</strong></p>
+                <p class="mb-1">Toplam Tutar: <strong>{{ siparis.toplam_tutar }}₺</strong></p>
+
+                <ul class="list-group list-group-flush">
+                  {% for og in siparis.ogeler.all %}
+                    <li class="list-group-item py-1">{{ og.adet }} x {{ og.menu.yemek_adi }} ({{ og.toplam_fiyat }}₺)</li>
+                  {% endfor %}
+                </ul>
+                 {% if siparis.durum == 'hazır' and not siparis.odendi %}
+        <form method="post" action="{% url 'siparis_odendi' siparis.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success">Ödendi</button>
+        </form>
+      {% elif siparis.odendi %}
+        <span class="badge bg-success">Ödendi</span>
+      {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>Bu masada aktif sipariş yok.</p>
+        {% endif %}
+      {% else %}
+        <p class="text-muted">Lütfen bir masa seçiniz.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gelir Raporu</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background-color: #fef9f2; color: #2e2e2e; font-family: sans-serif; }
+    .chart-container { width: 90%; margin: 40px auto; }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <h2>Günlük Gelir Grafiği</h2>
+    <canvas id="gelirChart" height="100"></canvas>
+  </div>
+
+  <script>
+    fetch("{% url 'gelir_grafik_veri' %}")
+      .then(response => response.json())
+      .then(data => {
+        const ctx = document.getElementById('gelirChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: data.tarihler,
+            datasets: [{
+              label: 'Toplam Gelir (₺)',
+              data: data.tutarlar,
+              backgroundColor: '#d4a373',
+              borderColor: '#6a8d73',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return '₺' + value;
+                  }
+                }
+              }
+            }
+          }
+        });
+      });
+  </script>
+</body>
+</html>

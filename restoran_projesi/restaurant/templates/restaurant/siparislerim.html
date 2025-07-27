@@ -1,0 +1,30 @@
+{% extends "restaurant/base.html" %}
+{% block content %}
+<h2>Benim Siparişlerim</h2>
+
+{% if siparisler %}
+  <ul>
+    {% for siparis in siparisler %}
+      <li>
+  {% if siparis.masa %}
+    Masa {{ siparis.masa.numara }}
+  {% else %}
+    Masa Bilinmiyor
+  {% endif %}
+   - Durum: {{ siparis.get_durum_display }} - Toplam: {{ siparis.toplam_tutar }}₺ - Tarih: {{ siparis.tarih_saat|date:"d.m.Y H:i" }}
+
+  <ul>
+    {% for og in siparis.ogeler.all %}
+      <li>{{ og.adet }} x {{ og.menu.yemek_adi }} ({{ og.toplam_fiyat }}₺)</li>
+    {% endfor %}
+  </ul>
+</li>
+
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Henüz siparişiniz yok.</p>
+{% endif %}
+
+<a href="{% url 'garson_panel' %}">Garson Paneline Dön</a>
+{% endblock %}

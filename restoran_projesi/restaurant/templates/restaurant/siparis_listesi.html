@@ -1,0 +1,27 @@
+<h1>Sipariş Listesi</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Masa No</th>
+            <th>Durum</th>
+            <th>Toplam Tutar</th>
+            <th>Tarih Saat</th>
+            <th>Ödendi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for siparis in siparisler %}
+        <tr>
+            <td>{{ siparis.id }}</td>
+            <td>{{ siparis.masa_no }}</td>
+            <td>{{ siparis.get_durum_display }}</td>
+            <td>{{ siparis.toplam_tutar }}</td>
+            <td>{{ siparis.tarih_saat }}</td>
+            <td>{{ siparis.odendi }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">Henüz sipariş yok.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

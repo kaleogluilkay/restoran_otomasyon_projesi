@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sipariş Oluştur</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; }
+        table { width: 60%; margin: auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #f2f2f2; }
+        input[type="number"] { width: 60px; }
+        .submit-btn { display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">Sipariş Oluştur</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="masa_no">Masa No:</label>
+        <input type="number" name="masa_no" required><br><br>
+
+        <table>
+            <tr>
+                <th>Seç</th>
+                <th>Yemek</th>
+                <th>Fiyat</th>
+                <th>Adet</th>
+            </tr>
+            {% for yemek in menuler %}
+            <tr>
+                <td><input type="checkbox" name="yemek_{{ forloop.counter0 }}_sec" value="{{ yemek.id }}"></td>
+                <td>{{ yemek.yemek_adi }}</td>
+                <td>{{ yemek.fiyat }} TL</td>
+                <td><input type="number" name="yemek_{{ forloop.counter0 }}_sec" value="1" min="1"></td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <button type="submit" class="submit-btn">Siparişi Gönder</button>
+    </form>
+</body>
+</html>

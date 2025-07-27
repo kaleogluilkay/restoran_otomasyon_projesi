@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sipariş Durum Güncelle</title>
+</head>
+<body>
+    <h1>Masa {{ siparis.masa_no }} - Sipariş Durumunu Güncelle</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="durum">Yeni Durum:</label>
+        <select name="durum" id="durum">
+            <option value="hazırlanıyor" {% if siparis.durum == 'hazırlanıyor' %}selected{% endif %}>Hazırlanıyor</option>
+            <option value="hazır" {% if siparis.durum == 'hazır' %}selected{% endif %}>Hazır</option>
+            <option value="teslim edildi" {% if siparis.durum == 'teslim edildi' %}selected{% endif %}>Teslim Edildi</option>
+        </select>
+        <button type="submit">Güncelle</button>
+    </form>
+    <a href="{% url 'sef_panel' %}">Geri Dön</a>
+</body>
+</html>

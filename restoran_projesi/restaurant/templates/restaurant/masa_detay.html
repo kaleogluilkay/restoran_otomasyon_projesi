@@ -1,0 +1,251 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Masa {{ masa.numara }} Sipariş{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Masa {{ masa.numara }} Sipariş Yönetimi</h2>
+        <a href="{% url 'garson_panel' %}" class="btn btn-secondary">Masalara Geri Dön</a>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <hr>
+
+    {% if aktif_siparis %}
+    <div class="card mb-4 border-info shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Mevcut Sipariş (ID: {{ aktif_siparis.id }})</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-group mb-3">
+                {% for oge in aktif_siparis.ogeler.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ oge.menu.yemek_adi }} x {{ oge.adet }}
+                    <span class="badge bg-primary rounded-pill">{{ oge.toplam_fiyat|floatformat:2 }} TL</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <h4 class="text-end mb-0">Toplam Tutar: <span class="text-success fw-bold">{{ aktif_siparis.toplam_tutar|floatformat:2 }} TL</span></h4>
+            <p class="text-end text-muted">Durum: {{ aktif_siparis.get_durum_display }}</p>
+        </div>
+    </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Bu masada henüz aktif bir sipariş bulunmamaktadır.
+        </div>
+    {% endif %}
+
+    <hr>
+
+    <h3 class="mb-3">Yeni Ürün Ekle / Sipariş Oluştur</h3>
+    <form id="siparisForm" method="POST" action="{% url 'masa_siparis_al' masa.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="yemek_secimleri" id="yemekSecimleriInput">
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="kategoriSecimi" class="form-label">Kategori Seç:</label>
+                <select class="form-select" id="kategoriSecimi">
+                    <option value="">Tüm Kategoriler</option>
+                    {% for kategori_display in kategoriler %}
+                        <option value="{{ kategori_display }}">{{ kategori_display|capfirst }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-8">
+                <label for="urunArama" class="form-label">Ürün Ara:</label>
+                <input type="text" class="form-control" id="urunArama" placeholder="Ürün adı ile ara...">
+            </div>
+        </div>
+
+        <div class="mb-3" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: .25rem; padding: 10px;">
+            <table class="table table-hover table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Ürün Adı</th>
+                        <th scope="col">Kategori</th>
+                        <th scope="col">Fiyat</th>
+                        <th scope="col">Adet</th>
+                        <th scope="col">Ekle</th>
+                    </tr>
+                </thead>
+                <tbody id="menuListesiBody">
+                    {% for menu_item in menuler %}
+                    <tr data-kategori="{{ menu_item.kategori }}" data-urun-adi="{{ menu_item.yemek_adi|lower }}">
+                        <td>{{ menu_item.yemek_adi }}</td>
+                        <td>{{ menu_item.get_kategori_display }}</td>
+                        <td>{{ menu_item.fiyat|floatformat:2 }} TL</td>
+                        <td><input type="number" class="form-control form-control-sm adet-input" min="1" value="1" data-id="{{ menu_item.id }}"></td>
+                        <td><button type="button" class="btn btn-success btn-sm add-to-order" data-id="{{ menu_item.id }}" data-name="{{ menu_item.yemek_adi }}" data-price="{{ menu_item.fiyat|floatformat:2 }}">Ekle</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h4 class="mt-4 mb-3">Eklenen Sipariş Ürünleri</h4>
+        <div class="border p-3 mb-3" style="min-height: 100px;">
+            <ul id="eklenenUrunlerList" class="list-group">
+                {# Buraya seçilen ürünler dinamik olarak eklenecek #}
+                {% if aktif_siparis %}
+                    {% for oge in aktif_siparis.ogeler.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ oge.menu.id }}" data-adet="{{ oge.adet }}">
+                            {{ oge.menu.yemek_adi }} ({{ oge.adet }} adet) - Toplam: {{ oge.toplam_fiyat|floatformat:2 }} TL
+                            <button type="button" class="btn btn-sm btn-danger remove-item">X</button>
+                        </li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            <p class="mt-3 text-end fs-5">Toplam Tutar: <span id="genelToplamTutar" class="fw-bold">0.00 TL</span></p>
+        </div>
+
+
+        <button type="submit" class="btn btn-primary btn-lg w-100">Siparişi Gönder / Güncelle</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuListBody = document.getElementById('menuListesiBody');
+        const kategoriSelect = document.getElementById('kategoriSecimi');
+        const urunAramaInput = document.getElementById('urunArama');
+        const eklenenUrunlerList = document.getElementById('eklenenUrunlerList');
+        const genelToplamTutarSpan = document.getElementById('genelToplamTutar');
+        const yemekSecimleriInput = document.getElementById('yemekSecimleriInput');
+
+        let secilenUrunler = {}; // {id: {name: "", price: 0, adet: 0}, ...}
+
+        // Mevcut sipariş öğelerini yüklüyoruz (eğer varsa)
+        function loadExistingOrderItems() {
+            const existingItems = eklenenUrunlerList.querySelectorAll('li[data-id]');
+            existingItems.forEach(item => {
+                const id = parseInt(item.dataset.id);
+                const adet = parseInt(item.dataset.adet);
+                const name = item.textContent.split(' (')[0].trim(); // Sadece ürün adını al
+                const price = parseFloat(item.textContent.match(/Toplam: (\d+\.\d{2}) TL/)[1]); // Fiyatı al
+                
+                secilenUrunler[id] = {
+                    name: name,
+                    price: price / adet, // Birim fiyatı hesapla
+                    adet: adet
+                };
+            });
+            updateOverallTotal();
+        }
+        loadExistingOrderItems();
+
+        function renderEklenenUrunler() {
+            eklenenUrunlerList.innerHTML = '';
+            let total = 0;
+            for (const id in secilenUrunler) {
+                const item = secilenUrunler[id];
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                listItem.dataset.id = id;
+                listItem.dataset.adet = item.adet; // Update data-adet
+                
+                const itemTotal = item.price * item.adet;
+                listItem.innerHTML = `
+                    ${item.name} (${item.adet} adet) - Toplam: ${itemTotal.toFixed(2)} TL
+                    <button type="button" class="btn btn-sm btn-danger remove-item">X</button>
+                `;
+                eklenenUrunlerList.appendChild(listItem);
+                total += itemTotal;
+            }
+            genelToplamTutarSpan.textContent = total.toFixed(2) + ' TL';
+            updateHiddenInput();
+        }
+
+        function updateOverallTotal() {
+            let total = 0;
+            for (const id in secilenUrunler) {
+                const item = secilenUrunler[id];
+                total += item.price * item.adet;
+            }
+            genelToplamTutarSpan.textContent = total.toFixed(2) + ' TL';
+        }
+
+        function updateHiddenInput() {
+            const dataToSend = [];
+            for (const id in secilenUrunler) {
+                dataToSend.push({
+                    id: parseInt(id),
+                    adet: secilenUrunler[id].adet
+                });
+            }
+            yemekSecimleriInput.value = JSON.stringify(dataToSend);
+        }
+
+        menuListBody.addEventListener('click', function(event) {
+            if (event.target.classList.contains('add-to-order')) {
+                const button = event.target;
+                const id = parseInt(button.dataset.id);
+                const name = button.dataset.name;
+                const price = parseFloat(button.dataset.price);
+                const adetInput = button.closest('tr').querySelector('.adet-input');
+                const adet = parseInt(adetInput.value);
+
+                if (adet <= 0) {
+                    alert('Lütfen geçerli bir adet girin.');
+                    return;
+                }
+
+                if (secilenUrunler[id]) {
+                    secilenUrunler[id].adet += adet;
+                } else {
+                    secilenUrunler[id] = { name: name, price: price, adet: adet };
+                }
+                renderEklenenUrunler();
+            }
+        });
+
+        eklenenUrunlerList.addEventListener('click', function(event) {
+            if (event.target.classList.contains('remove-item')) {
+                const listItem = event.target.closest('li');
+                const idToRemove = parseInt(listItem.dataset.id);
+                delete secilenUrunler[idToRemove];
+                renderEklenenUrunler();
+            }
+        });
+
+        kategoriSelect.addEventListener('change', filterMenuItems);
+        urunAramaInput.addEventListener('keyup', filterMenuItems);
+
+        function filterMenuItems() {
+            const selectedKategori = kategoriSelect.value;
+            const searchTerm = urunAramaInput.value.toLowerCase();
+
+            Array.from(menuListBody.children).forEach(row => {
+                const kategori = row.dataset.kategori;
+                const urunAdi = row.dataset.urunAdi;
+
+                const kategoriMatch = selectedKategori === '' || kategori === selectedKategori;
+                const searchMatch = urunAdi.includes(searchTerm);
+
+                if (kategoriMatch && searchMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // İlk yüklemede toplam tutarı güncelle
+        renderEklenenUrunler();
+    });
+</script>
+{% endblock %}
