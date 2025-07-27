@@ -105,6 +105,7 @@ DATABASES = {
 
 ## 8. Veritabanı Tablolarını Oluşturun
 python manage.py makemigrations
+
 python manage.py migrate
 
 ## 9. Süper Kullanıcı Oluşturun
