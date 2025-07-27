@@ -64,8 +64,10 @@ Proje Django ve MySQL kullanmaktadır. Öncelikle aşağıdaki bileşenlerin sis
 
 ## 2. Projeyi Klonlayın (veya ZIP’ten çıkarın)
 --Git yüklü ise terminalde: 
+
 git clone https://github.com/kaleogluilkay/restoran_otomasyon_projesi.git
 cd restoran_projesi
+
 --Git yoksa, GitHub üzerinden "Code > Download ZIP" diyerek indirebilirsiniz.
 
 ### 3 - Sanal Ortam Oluşturma 
@@ -79,14 +81,17 @@ source venv/bin/activate
 
 ## 5- Gerekli Paketleri Yükleme
 pip install django mysqlclient 
+
 (Alternatif olarak, uyumsuzluk durumunda PyMySQL kullanılabilir.)
 
 ## 6- MySQL Veritabanı Oluşturun
 MySQL’e bağlanarak yeni bir veritabanı oluşturun:
+
 (CREATE DATABASE restoran_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;)
 
 ### 7. settings.py Ayarlarını Yapın
 restoran_projesi/settings.py dosyasındaki DATABASES bölümünü şu şekilde düzenleyin:
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
