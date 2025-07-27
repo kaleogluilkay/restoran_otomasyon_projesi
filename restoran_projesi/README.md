@@ -10,7 +10,9 @@ Bu proje bir restoranın stok takibini yapmak, yemek tariflerini yönetmek, sipa
  ## Kullanıcı Rolleri
  
 **Admin:** Kullanıcı, stok, menü, tarif ve rapor modüllerini yönetebilir.
+
 **Şef:** Tarif oluşturur, stok malzemelerini görüntüler, sipariş durumlarını günceller.
+
 **Garson:** Masa seçip menüden sipariş oluşturur, sipariş durumunu takip eder.
 
 ## Özellikler
