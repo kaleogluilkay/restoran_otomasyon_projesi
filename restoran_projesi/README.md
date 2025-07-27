@@ -1,4 +1,4 @@
-##  Geliştirici
+##  Geliştiriciler
 
 - GitHub: [@kaleogluilkay](https://github.com/kaleogluilkay)
 - Fatma Zehra Demirci
@@ -62,7 +62,7 @@ Proje Django ve MySQL kullanmaktadır. Öncelikle aşağıdaki bileşenlerin sis
 
 ## 2. Projeyi Klonlayın (veya ZIP’ten çıkarın)
 --Git yüklü ise terminalde: 
-git clone https://github.com/kaleogluilkay/restoran_projesi.git
+git clone https://github.com/kaleogluilkay/restoran_otomasyon_projesi.git
 cd restoran_projesi
 --Git yoksa, GitHub üzerinden "Code > Download ZIP" diyerek indirebilirsiniz.
 
